@@ -8,7 +8,7 @@ const gl = canvas.getContext('webgl2');
 const vertexShader = `#version 300 es
 precision mediump float;
 
-in vec2 position;
+in vec3 position;
 in vec3 iColor;
 out vec3 oColor;
 uniform float iTime;
@@ -18,8 +18,8 @@ uniform mat4 projectionMatrix;
 
 void main()
 {
-    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(position, 0, 1);
-    oColor = vec3(abs(sin(iTime)), iColor.gb);
+    gl_Position = projectionMatrix * viewMatrix * (modelMatrix * vec4(position, 1));
+    oColor = iColor;
 }
 `;
 
@@ -63,31 +63,32 @@ if(!gl.getProgramParameter(program, gl.LINK_STATUS)){
 
 gl.useProgram(program);
 
-//Drawing basic triangle
-const triangleCoords = [
-    -1, 1,
-    -1, -1,
-    1, -1,
-    1, 1
-    /* -0.2, 0.2,
-    0.2, -0.2,
-    0.2, 0.2 */
+//Cube vertices
+const cubeCoords = [
+    -1,-1,-1, 1,-1,-1, 1,1,-1, -1,1,-1, //front quad
+    -1,-1,1, 1,-1,1, 1,1,1, -1,1,1, //back quad
+    -1,-1,-1, -1,-1,1, -1,1,1, -1,1,-1, //left quad
+     1,-1,-1, 1,-1,1, 1,1,1, 1,1,-1, //right quad
+    -1,-1,-1, -1,-1,1, 1,-1,1, 1,-1,-1, //down quad
+    -1,1,-1, -1,1,1, 1,1,1, 1,1,-1, //up quad
 ];
 
 const vertexColorArray = [
-    1, 0, 0, //r
-    0, 1, 0, //g
-    0, 0, 1, //b
-    1, 1, 1,
-/* 
-    1, 1, 0,
-    0.5, 0, 0.5,
-    0, 1, 0.5 */
+    1,0,0, 1,0,0, 1,0,0, 1,0,0, //front quad color
+    0,1,0, 0,1,0, 0,1,0, 0,1,0, //back quad color
+    0,0,1, 0,0,1, 0,0,1, 0,0,1, //left quad color
+    1,1,0, 1,1,0, 1,1,0, 1,1,0, //right quad color
+    0,1,1, 0,1,1, 0,1,1, 0,1,1, //down quad color
+    1,0,1, 1,0,1, 1,0,1, 1,0,1, //up quad color
 ];
 
 const indexArray = [
-    0, 1, 2,
-    0, 2, 3
+    0,1,2, 0,2,3, //front quad indices
+    4,5,6, 4,6,7, //back quad indices
+    8,9,10, 8,10,11, //left quad indices
+    12,13,14, 12,14,15, //right quad indices
+    16,17,18, 16,18,19, //down quad indices
+    20,21,22, 20,22,23, //up quad indices
 ];
 
 const indexArrayBuffer = gl.createBuffer();
@@ -131,11 +132,11 @@ const ArrowKeys = ()=>{
 
 ArrowKeys();
 
-/* mat4.scale(
+mat4.scale(
     modelMatrix,
     modelMatrix,
-    [0.5, 0.5, 0]
-); */
+    [1, 1, 1]
+);
 
 mat4.translate(
     modelMatrix,
@@ -152,12 +153,12 @@ const update = ()=> {
     now = Date.now();
     //console.log(deltaTime/1000);
 
-    /* mat4.rotate(
+    mat4.rotate(
         modelMatrix,
         modelMatrix,
-        deltaTime / 10000,
-        [0, 0, 1]
-    ); */
+        deltaTime * 1,
+        [1, 1, 0]
+    );
 
     mat4.translate(
         modelMatrix,
@@ -176,8 +177,10 @@ const update = ()=> {
     
 
     //clear screen
+    gl.enable(gl.DEPTH_TEST);
+    gl.depthFunc(gl.LEQUAL);
     gl.clearColor(0, 0, 0, 1);
-    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     
     gl.uniform1f(uniformTime, deltaTime / 1000);
@@ -186,7 +189,7 @@ const update = ()=> {
     gl.uniformMatrix4fv(uViewMatrix, false, viewMatrix);
     gl.uniformMatrix4fv(uProjectionMatrix, false, projectionMatrix);
 
-    //
+    //Color
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexColorBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexColorArray), gl.STATIC_DRAW);
     gl.enableVertexAttribArray(attribVertexColor);
@@ -194,9 +197,9 @@ const update = ()=> {
 
     //Reservamos memoria en la tarjeta de video (Vram)
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(triangleCoords), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(cubeCoords), gl.STATIC_DRAW);
     gl.enableVertexAttribArray(attribPosition);
-    gl.vertexAttribPointer(attribPosition, 2, gl.FLOAT, gl.FALSE, 0, 0);
+    gl.vertexAttribPointer(attribPosition, 3, gl.FLOAT, gl.FALSE, 0, 0);
 
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexArrayBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indexArray), gl.STATIC_DRAW);
