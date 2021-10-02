@@ -1,0 +1,29 @@
+{
+  "name": "webgl-helloworld",
+  "version": "0.0.1",
+  "description": "WebGL App for AR and VR (XR)",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DPreciado/webgl-helloworld.git"
+  },
+  "keywords": [
+    "vr",
+    "xr",
+    "ar",
+    "webgl"
+  ],
+  "author": "David Preciado",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/DPreciado/webgl-helloworld/issues"
+  },
+  "homepage": "https://github.com/DPreciado/webgl-helloworld#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
