@@ -27,10 +27,7 @@ class Shader {
   }
 
   async getFile(filePath) {
-    const file = await fetch(filePath).then(res => res.text().then(data => {
-      console.log(data);
-      return data;
-    }));
+    const file = await fetch(filePath).then(res => res.text().then(data => data));
     if(!file){
         console.error(`Warning: Loading of ${filePath} Failed!`);
     }
